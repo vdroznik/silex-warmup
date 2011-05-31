@@ -9,6 +9,17 @@ $app->register(new Silex\Extension\SymfonyBridgesExtension(), array(
     'form.class_path' => __DIR__.'/../vendor/Symfony/Bridge',
 ));
 
+$app->register(new Silex\Extension\DoctrineExtension(), array(
+    'db.options' => array(
+        'dbname' => 'verse',
+        'host' => 'localhost',
+        'user' => 'root',
+        'password' => '`'
+    ),
+    'db.dbal.class_path'    => __DIR__.'/vendor/doctrine-dbal/lib',
+    'db.common.class_path'  => __DIR__.'/vendor/doctrine-common/lib',
+));
+
 $app->register(new Silex\Extension\ValidatorExtension(), array(
     'validator.class_path'    => __DIR__.'/../vendor/Symfony/Component',
 ));
@@ -30,11 +41,12 @@ $app->match('/obituaries', function () use ($app) {
                                 ->getForm();
 
     if($app['request']->getMethod() == 'POST') {
+        // validation won't work for some reason for now
+        // waiting for official FormExtension release
         $form->bindRequest($app['request']);
-        $ret = $app['validator']->validate($obituarySearchCriterion);
-
+        // $ret = $app['validator']->validate($obituarySearchCriterion);
         if($form->isValid()) {
-            echo 'valid form!';
+
         }
     }
 
