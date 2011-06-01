@@ -46,12 +46,14 @@ $app->match('/obituaries', function () use ($app) {
         $form->bindRequest($app['request']);
         // $ret = $app['validator']->validate($obituarySearchCriterion);
         if($form->isValid()) {
-
+            $obitSearcher = new ObituarySearcher($app['db'], $obituarySearchCriterion);
+            $pagenator = new Pagenator($obitSearcher, $app['request']->get('page', 1));
         }
     }
 
     return $app['twig']->render('obituaries.twig', array(
-        'form' => $form->createView()
+        'form' => $form->createView(),
+        'pagenator' => $pagenator
     ));
 });
 
