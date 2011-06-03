@@ -13,6 +13,14 @@ class Paginator {
     }
 
     public function getItems() {
-        return $this->paginee->getItems();
+        return $this->paginee->getItems($this->page, $this->records_per_page);
+    }
+
+    public function getTotalPages() {
+        $pages = 1;
+        if($this->records_per_page) {
+            $pages = ceil($this->paginee->getTotalRecords() / $this->records_per_page);
+        }
+        return $pages;
     }
 }

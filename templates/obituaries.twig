@@ -3,4 +3,12 @@
     {{ form_widget(form) }}
     <input type="submit" />
 </form>
-{{ paginator.getItems }}
+{% if paginator %}
+{{ paginator.items|length }}
+{% for item in paginator.items %}
+<div>{{ item.first_name }} {{ item.middle_name }} {{ item.last_name }}</div>
+{% endfor %}
+<div class="paginator">
+{{ paginator|paginate }}
+</div>
+{% endif %}

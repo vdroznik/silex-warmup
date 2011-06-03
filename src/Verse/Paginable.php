@@ -2,7 +2,7 @@
 namespace Verse;
 
 interface Paginable {
-    public function getItems();
+    public function getItems($page, $rpp);
     public function getPage();
-    public function getTotalPages();
+    public function getTotalRecords();
 }

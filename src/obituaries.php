@@ -4,11 +4,12 @@ use Verse\Obituary\ObituarySearchCriterion;
 use Verse\Obituary\ObituarySearchForm;
 use Verse\Obituary\ObituarySearcher;
 use Verse\Paginator;
+use Verse\PaginatorExtension;
 
 $app = new Silex\Application();
 
 $app->register(new Silex\Extension\SymfonyBridgesExtension(), array(
-    'form.class_path' => __DIR__.'/../vendor/Symfony/Bridge',
+    'symfony_bridges.class_path' => __DIR__.'/../vendor',
 ));
 
 $app->register(new Silex\Extension\DoctrineExtension(), array(
@@ -18,8 +19,8 @@ $app->register(new Silex\Extension\DoctrineExtension(), array(
         'user' => 'root',
         'password' => '`'
     ),
-    'db.dbal.class_path'    => __DIR__.'/../vendor/doctrine-dbal',
-    'db.common.class_path'  => __DIR__.'/../vendor/doctrine-common',
+    'db.dbal.class_path'    => __DIR__.'/../vendor/doctrine-dbal/lib',
+    'db.common.class_path'  => __DIR__.'/../vendor/doctrine-common/lib',
 ));
 
 $app->register(new Silex\Extension\ValidatorExtension(), array(
@@ -34,7 +35,8 @@ $app->register(new Silex\Extension\TwigExtension(), array(
     'twig.path'       => __DIR__.'/../templates',
     'twig.class_path' => __DIR__.'/../vendor/twig/lib',
 ));
-
+// $app['twig']->addFilter('paginate', new Twig_Filter_Method(new PaginatorExtension(), 'paginate'));
+$app['twig']->addFilter('paginate', new Twig_Filter_Function('paginate'));
 
 $app->match('/obituaries', function () use ($app) {
     $paginator = null;
@@ -50,7 +52,7 @@ $app->match('/obituaries', function () use ($app) {
         // $ret = $app['validator']->validate($obituarySearchCriterion);
         if($form->isValid()) {
             $obitSearcher = new ObituarySearcher($app['db'], $obituarySearchCriterion);
-            $paginator = new Paginator($obitSearcher, $app['request']->get('page', 1));
+            $paginator = new Paginator($obitSearcher, $app['request']->get('page', 1), 25);
         }
     }
 
@@ -61,3 +63,8 @@ $app->match('/obituaries', function () use ($app) {
 });
 
 return $app;
+
+function paginate(Paginator $paginator) {
+
+    return "1 - ".$paginator->getTotalPages();
+}
