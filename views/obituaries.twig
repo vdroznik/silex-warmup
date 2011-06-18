@@ -1,0 +1,27 @@
+<h1>Obituaries search</h1>
+<form action="/obituaries-test" method="post">
+    {{ form_widget(form) }}
+    <input type="submit" />
+</form>
+{% if paginator %}
+<div class="total">Found <strong>{{ paginator.results }}</strong> record(s)</div>
+<table>
+<tr>
+<th></th>
+<th>{{ "Date of Death"|order("death_date")|raw }}</th>
+<th>{{ "Name"|order("last_name")|raw }}</th>
+<th>{{ "Home Place"|order("home_place")|raw }}</th>
+</tr>
+{% for item in paginator.items %}
+<tr>
+<td>{{ item.image }}</td>
+<td>{{ item.death_date }}</td>
+<td><div>{{ item.last_name }}, {{ item.first_name }} {{ item.middle_name }}</div></td>
+<td>{{ item.home_place }}</td>
+</tr>
+{% endfor %}
+</table>
+<div class="paginator">
+{{ paginator|paginate|raw }}
+</div>
+{% endif %}

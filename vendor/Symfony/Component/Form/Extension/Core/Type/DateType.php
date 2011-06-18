@@ -25,6 +25,9 @@ use Symfony\Component\Form\ReversedTransformer;
 
 class DateType extends AbstractType
 {
+    /**
+     * {@inheritdoc}
+     */
     public function buildForm(FormBuilder $builder, array $options)
     {
         $formatter = new \IntlDateFormatter(
@@ -34,7 +37,7 @@ class DateType extends AbstractType
             \DateTimeZone::UTC
         );
 
-        if ($options['widget'] === 'single-text') {
+        if ($options['widget'] === 'single_text') {
             $builder->appendClientTransformer(new DateTimeToLocalizedStringTransformer($options['data_timezone'], $options['user_timezone'], $options['format'], \IntlDateFormatter::NONE));
         } else {
             $yearOptions = $monthOptions = $dayOptions = array();
@@ -87,6 +90,9 @@ class DateType extends AbstractType
         ;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function buildViewBottomUp(FormView $view, FormInterface $form)
     {
         $view->set('widget', $form->getAttribute('widget'));
@@ -108,6 +114,9 @@ class DateType extends AbstractType
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getDefaultOptions(array $options)
     {
         return array(
@@ -125,6 +134,9 @@ class DateType extends AbstractType
         );
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getAllowedOptionValues(array $options)
     {
         return array(
@@ -135,7 +147,7 @@ class DateType extends AbstractType
                 'array',
             ),
             'widget'    => array(
-                'single-text',
+                'single_text',
                 'text',
                 'choice',
             ),
@@ -148,11 +160,17 @@ class DateType extends AbstractType
         );
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getParent(array $options)
     {
-        return $options['widget'] === 'single-text' ? 'field' : 'form';
+        return $options['widget'] === 'single_text' ? 'field' : 'form';
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getName()
     {
         return 'date';

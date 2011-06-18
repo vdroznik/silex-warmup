@@ -12,15 +12,31 @@ class Paginator {
         $this->records_per_page = $records_per_page;
     }
 
+    public function getCurrent() {
+        return $this->page;
+    }
+
+    public function getResults() {
+        static $results;
+        if(!$results) {
+            $results = $this->paginee->getTotalRecords();
+        }
+        return $results;
+    }
+
     public function getItems() {
         return $this->paginee->getItems($this->page, $this->records_per_page);
     }
 
     public function getTotalPages() {
-        $pages = 1;
-        if($this->records_per_page) {
-            $pages = ceil($this->paginee->getTotalRecords() / $this->records_per_page);
+        static $total;
+        if(!$total) {
+            $pages = 1;
+            if($this->records_per_page) {
+                $pages = ceil($this->paginee->getTotalRecords() / $this->records_per_page);
+            }
+            $total = $pages;
         }
-        return $pages;
+        return $total;
     }
 }

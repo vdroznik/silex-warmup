@@ -8,6 +8,8 @@ use Verse\PaginatorExtension;
 
 $app = new Silex\Application();
 
+$app->register(new Silex\Extension\SessionExtension());
+
 $app->register(new Silex\Extension\SymfonyBridgesExtension(), array(
     'symfony_bridges.class_path' => __DIR__.'/../vendor',
 ));
@@ -32,15 +34,20 @@ $app->register(new Silex\Extension\FormExtension(), array(
 ));
 
 $app->register(new Silex\Extension\TwigExtension(), array(
-    'twig.path'       => __DIR__.'/../templates',
+    'twig.path'       => __DIR__.'/../views',
     'twig.class_path' => __DIR__.'/../vendor/twig/lib',
 ));
 // $app['twig']->addFilter('paginate', new Twig_Filter_Method(new PaginatorExtension(), 'paginate'));
 $app['twig']->addFilter('paginate', new Twig_Filter_Function('paginate'));
+$app['twig']->addFilter('order', new Twig_Filter_Function('order'));
 
-$app->match('/obituaries', function () use ($app) {
+$app->match('/obituaries-test', function () use ($app) {
     $paginator = null;
-    $obituarySearchCriterion = new ObituarySearchCriterion();
+
+    $obituarySearchCriterion = $app['session']->get('obituarySearchCriterion');
+    if(!$obituarySearchCriterion) {
+        $obituarySearchCriterion = new ObituarySearchCriterion();
+    }
     $form = $app['form.factory']->createBuilder(new ObituarySearchForm(), $obituarySearchCriterion)
 //                                ->addValidator($app['validator'])
                                 ->getForm();
@@ -51,10 +58,11 @@ $app->match('/obituaries', function () use ($app) {
         $form->bindRequest($app['request']);
         // $ret = $app['validator']->validate($obituarySearchCriterion);
         if($form->isValid()) {
-            $obitSearcher = new ObituarySearcher($app['db'], $obituarySearchCriterion);
-            $paginator = new Paginator($obitSearcher, $app['request']->get('page', 1), 25);
+            $app['session']->set('obituarySearchCriterion', $obituarySearchCriterion);
         }
     }
+    $obitSearcher = new ObituarySearcher($app['db'], $obituarySearchCriterion, $app['request']->get('order'), $app['request']->get('dest'));
+    $paginator = new Paginator($obitSearcher, $app['request']->get('page', 1), 25);
 
     return $app['twig']->render('obituaries.twig', array(
         'form' => $form->createView(),
@@ -65,6 +73,39 @@ $app->match('/obituaries', function () use ($app) {
 return $app;
 
 function paginate(Paginator $paginator) {
+    global $obituaries;
 
-    return "1 - ".$paginator->getTotalPages();
+    return $obituaries['twig']->render('paginator.twig', array(
+        'paginator' => $paginator
+    ));
+}
+
+function order($link_text, $order_by) {
+    global $obituaries;
+
+    $page = $obituaries['request']->get('page');
+    $order = $obituaries['request']->get('order');
+    $order_dest = $obituaries['request']->get('dest');
+
+    if($order == $order_by) {
+        if($order_dest=='desc') {
+            $order_dest = '';
+        }
+        else {
+            $order_dest = 'desc';
+        }
+    }
+    else {
+        $order_dest = '';
+    }
+
+    if($page) {
+        $page="page=$page&";
+    }
+
+    if($order_dest) {
+        $order_dest = '&dest='.$order_dest;
+    }
+    
+    return "<a href=\"?{$page}order=$order_by$order_dest\">$link_text</a>";
 }
