@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__.'/../silex.phar';
+
 use Verse\Obituary\ObituarySearchCriterion;
 use Verse\Obituary\ObituarySearchForm;
 use Verse\Obituary\ObituarySearcher;
@@ -36,19 +37,35 @@ $app->register(new Silex\Extension\FormExtension(), array(
 $app->register(new Silex\Extension\TwigExtension(), array(
     'twig.path'       => __DIR__.'/../views',
     'twig.class_path' => __DIR__.'/../vendor/twig/lib',
+    'twig.options'    => array(
+//        'cache' => 'cache',
+//        'debug' => true
+    )
 ));
 // $app['twig']->addFilter('paginate', new Twig_Filter_Method(new PaginatorExtension(), 'paginate'));
 $app['twig']->addFilter('paginate', new Twig_Filter_Function('paginate'));
 $app['twig']->addFilter('order', new Twig_Filter_Function('order'));
+$app['twig']->addFilter('page', new Twig_Filter_Function('page'));
+
+$app->before(function() use ($app, $domain_id) {
+    $app['request_context']->setParameter('domain_id', $domain_id);
+} );
 
 $app->match('/obituaries-test', function () use ($app) {
-    $paginator = null;
-
     $obituarySearchCriterion = $app['session']->get('obituarySearchCriterion');
     if(!$obituarySearchCriterion) {
-        $obituarySearchCriterion = new ObituarySearchCriterion();
+        $obituarySearchCriterion = new ObituarySearchCriterion($app['request_context']->getParameter('domain_id'));
     }
-    $form = $app['form.factory']->createBuilder(new ObituarySearchForm(), $obituarySearchCriterion)
+    $ret = $app['db']->executeQuery('SELECT DISTINCT home_place FROM plg_obituary WHERE domain_id=:domain_id ORDER BY home_place',
+                                            array('domain_id'=>$app['request_context']->getParameter('domain_id')))
+                     ->fetchAll(\PDO::FETCH_COLUMN);
+    $home_places = array();
+    foreach($ret as $home_place) {
+        if(strlen(trim($home_place))>2) {
+            $home_places[$home_place] = $home_place;
+        }
+    }
+    $form = $app['form.factory']->createBuilder(new ObituarySearchForm($home_places), $obituarySearchCriterion)
 //                                ->addValidator($app['validator'])
                                 ->getForm();
 
@@ -108,4 +125,24 @@ function order($link_text, $order_by) {
     }
     
     return "<a href=\"?{$page}order=$order_by$order_dest\">$link_text</a>";
+}
+
+function page($link_text, $page = null) {
+    global $obituaries;
+
+    if(!$page) {
+        $page = $link_text;
+    }
+
+    $order = $obituaries['request']->get('order');
+    $order_dest = $obituaries['request']->get('dest');
+
+    if($order) {
+        $order = "&order=$order";
+    }
+    if($order_dest) {
+        $order_dest = "&dest=$order_dest";
+    }
+
+    return "<a href=\"?page=$page$order$order_dest\">$link_text</a>";
 }

@@ -1,6 +1,9 @@
 <h1>Obituaries search</h1>
 <form action="/obituaries-test" method="post">
-    {{ form_widget(form) }}
+    {{ form_widget(form.text) }}
+    {{ form_widget(form.datefrom) }}
+    {{ form_widget(form.dateto) }}
+    {{ form_widget(form.homeplace, {'empty_value': '-- Choose home city --'}) }}
     <input type="submit" />
 </form>
 {% if paginator %}

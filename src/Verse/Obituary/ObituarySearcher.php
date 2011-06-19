@@ -19,7 +19,10 @@ class ObituarySearcher implements Paginable {
 
     public function getItems($page, $rpp = null) {
         $query = 'SELECT first_name, middle_name, last_name, death_date, home_place, image FROM plg_obituary
-                    WHERE first_name LIKE :name OR middle_name LIKE :name OR last_name LIKE :name';
+                    WHERE domain_id=:domain_id AND (first_name LIKE :name OR middle_name LIKE :name OR last_name LIKE :name)';
+        if($this->criterion->homeplace) {
+            $query.=" AND home_place=:home_place";
+        }
         if($this->order) {
             $query.=" ORDER BY ".$this->db->quoteIdentifier($this->order);
             if($this->order_dest=='desc') {
@@ -30,7 +33,9 @@ class ObituarySearcher implements Paginable {
             $limit_clause = " LIMIT ".($page-1)*$rpp.", $rpp";
             $query.=$limit_clause;
         }
-        $items = $this->db->fetchAll($query, array('name'=>'%'.$this->criterion->text.'%'));
+        $items = $this->db->fetchAll($query, array('domain_id'=>$this->criterion->domain_id,
+                                                   'name'=>'%'.$this->criterion->text.'%',
+                                                   'home_place'=>$this->criterion->homeplace));
         return $items;
     }
 
@@ -39,8 +44,14 @@ class ObituarySearcher implements Paginable {
     }
 
     public function getTotalRecords() {
-        return $this->db->fetchColumn('SELECT count(*) FROM plg_obituary
-            WHERE first_name LIKE :name OR middle_name LIKE :name OR last_name LIKE :name', array('name'=>'%'.$this->criterion->text.'%'));
+        $query = 'SELECT count(*) FROM plg_obituary
+                    WHERE domain_id=:domain_id AND (first_name LIKE :name OR middle_name LIKE :name OR last_name LIKE :name)';
+        if($this->criterion->homeplace) {
+            $query.=" AND home_place=:home_place";
+        }
+        return $this->db->fetchColumn($query, array('domain_id'=>$this->criterion->domain_id,
+                                                    'name'=>'%'.$this->criterion->text.'%',
+                                                    'home_place'=>$this->criterion->homeplace));
     }
     
 }

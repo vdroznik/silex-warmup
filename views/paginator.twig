@@ -2,17 +2,17 @@
 <div class="pagination">
 	{% if paginator.current != 1 %}
         <span class="first">
-        	<a href="?page=1">&lt;&lt;</a>
+            {{ "&lt;&lt;"|page(1)|raw }}
         </span>
         <span class="previous">
-            <a href="?page={{ paginator.current-1 }}">&lt;</a>
+            {{ "&lt;"|page(paginator.current-1)|raw }}
         </span>
     {% endif %}
 
     {% for page in 1..paginator.totalPages %}
         {% if page != paginator.current %}
             <span class="page">
-            	<a href="?page={{ page }}">{{ page }}</a>
+                {{ page|page|raw }}
             </span>
         {% else %}
             <span class="page current">{{ page }}</span>
@@ -22,10 +22,10 @@
 
     {% if paginator.current != paginator.totalPages %}
         <span class="next">
-            <a href="?page={{ paginator.current+1 }}">&gt;</a>
+            {{ "&gt;"|page(paginator.current+1)|raw }}
         </span>
         <span class="last">
-        	<a href="?page={{ paginator.totalPages }}">&gt;&gt;</a>
+            {{ "&gt;&gt;"|page(paginator.totalPages)|raw }}
         </span>
     {% endif %}
 </div>
