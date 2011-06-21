@@ -212,7 +212,7 @@ abstract class AbstractExtension implements FormExtensionInterface
         $this->typeGuesserLoaded = true;
 
         $this->typeGuesser = $this->loadTypeGuesser();
-        if (null !== $this->typeGuesser && !$this->typeGuesser instanceof FormTypeGuesserInterface) {
+        if (!$this->typeGuesser instanceof FormTypeGuesserInterface) {
             throw new UnexpectedTypeException($this->typeGuesser, 'Symfony\Component\Form\FormTypeGuesserInterface');
         }
     }

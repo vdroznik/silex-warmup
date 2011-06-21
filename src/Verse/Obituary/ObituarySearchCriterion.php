@@ -19,4 +19,8 @@ class ObituarySearchCriterion {
         $metadata->addPropertyConstraint('text', new Constraints\MinLength(3));
 //        $metadata->addPropertyConstraint('datefrom', new Constraints\Date());
     }
+
+    public function notEmpty() {
+        return $this->text || $this->datefrom || $this->dateto || $this->homeplace;
+    }
 }

@@ -47,8 +47,9 @@ $app['twig']->addFilter('paginate', new Twig_Filter_Function('paginate'));
 $app['twig']->addFilter('order', new Twig_Filter_Function('order'));
 $app['twig']->addFilter('page', new Twig_Filter_Function('page'));
 
-$app->before(function() use ($app, $domain_id) {
+$app->before(function() use ($app, $domain_id, $domain_name) {
     $app['request_context']->setParameter('domain_id', $domain_id);
+    $app['request_context']->setParameter('domain_name', $domain_name);
 } );
 
 $app->match('/obituaries-test', function () use ($app) {
@@ -61,25 +62,33 @@ $app->match('/obituaries-test', function () use ($app) {
                      ->fetchAll(\PDO::FETCH_COLUMN);
     $home_places = array();
     foreach($ret as $home_place) {
-        if(strlen(trim($home_place))>2) {
+        $home_place = trim($home_place);
+        if(strlen($home_place)>2) {
             $home_places[$home_place] = $home_place;
         }
     }
+//    $assoc = array('text'=>'jay3', 'homeplace'=>'Madera, CA');
     $form = $app['form.factory']->createBuilder(new ObituarySearchForm($home_places), $obituarySearchCriterion)
 //                                ->addValidator($app['validator'])
                                 ->getForm();
+//    $form->setData($assoc);
 
     if($app['request']->getMethod() == 'POST') {
         // validation won't work for some reason for now
         // waiting for official FormExtension release
         $form->bindRequest($app['request']);
         // $ret = $app['validator']->validate($obituarySearchCriterion);
-        if($form->isValid()) {
+//        if($form->isValid()) {
             $app['session']->set('obituarySearchCriterion', $obituarySearchCriterion);
-        }
+//        }
     }
-    $obitSearcher = new ObituarySearcher($app['db'], $obituarySearchCriterion, $app['request']->get('order'), $app['request']->get('dest'));
-    $paginator = new Paginator($obitSearcher, $app['request']->get('page', 1), 25);
+    if($obituarySearchCriterion->notEmpty()) {
+        $obitSearcher = new ObituarySearcher($app['db'], $obituarySearchCriterion, $app['request']->get('order'), $app['request']->get('dest'));
+        $paginator = new Paginator($obitSearcher, $app['request']->get('page', 1), 25);
+    }
+    else {
+        $paginator = null;
+    }
 
     return $app['twig']->render('obituaries.twig', array(
         'form' => $form->createView(),

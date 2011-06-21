@@ -4,7 +4,7 @@
     {{ form_widget(form.datefrom) }}
     {{ form_widget(form.dateto) }}
     {{ form_widget(form.homeplace, {'empty_value': '-- Choose home city --'}) }}
-    <input type="submit" />
+    <input type="submit" value="Search obituaries"/>
 </form>
 {% if paginator %}
 <div class="total">Found <strong>{{ paginator.results }}</strong> record(s)</div>
@@ -17,7 +17,7 @@
 </tr>
 {% for item in paginator.items %}
 <tr>
-<td>{{ item.image }}</td>
+<td>{{ app.request_context.domain_id }}/{{ item.image }}</td>
 <td>{{ item.death_date }}</td>
 <td><div>{{ item.last_name }}, {{ item.first_name }} {{ item.middle_name }}</div></td>
 <td>{{ item.home_place }}</td>
