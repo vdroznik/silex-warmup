@@ -17,7 +17,7 @@
 </tr>
 {% for item in paginator.items %}
 <tr>
-<td>{{ app.request_context.domain_id }}/{{ item.image }}</td>
+<td>{{ item.image }}</td>
 <td>{{ item.death_date }}</td>
 <td><div>{{ item.last_name }}, {{ item.first_name }} {{ item.middle_name }}</div></td>
 <td>{{ item.home_place }}</td>

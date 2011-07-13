@@ -18,11 +18,8 @@ class ObituarySearcher implements Paginable {
     }
 
     public function getItems($page, $rpp = null) {
-        $query = 'SELECT first_name, middle_name, last_name, death_date, home_place, image FROM plg_obituary
-                    WHERE domain_id=:domain_id AND (first_name LIKE :name OR middle_name LIKE :name OR last_name LIKE :name)';
-        if($this->criterion->homeplace) {
-            $query.=" AND home_place=:home_place";
-        }
+        $cond = $this->buildWhereClause();
+        $query = 'SELECT first_name, middle_name, last_name, death_date, home_place, image FROM plg_obituary WHERE '.$cond['where'];
         if($this->order) {
             $query.=" ORDER BY ".$this->db->quoteIdentifier($this->order);
             if($this->order_dest=='desc') {
@@ -33,9 +30,7 @@ class ObituarySearcher implements Paginable {
             $limit_clause = " LIMIT ".($page-1)*$rpp.", $rpp";
             $query.=$limit_clause;
         }
-        $items = $this->db->fetchAll($query, array('domain_id'=>$this->criterion->domain_id,
-                                                   'name'=>'%'.$this->criterion->text.'%',
-                                                   'home_place'=>$this->criterion->homeplace));
+        $items = $this->db->fetchAll($query, $cond['params']);
         return $items;
     }
 
@@ -44,14 +39,23 @@ class ObituarySearcher implements Paginable {
     }
 
     public function getTotalRecords() {
-        $query = 'SELECT count(*) FROM plg_obituary
-                    WHERE domain_id=:domain_id AND (first_name LIKE :name OR middle_name LIKE :name OR last_name LIKE :name)';
-        if($this->criterion->homeplace) {
-            $query.=" AND home_place=:home_place";
-        }
-        return $this->db->fetchColumn($query, array('domain_id'=>$this->criterion->domain_id,
-                                                    'name'=>'%'.$this->criterion->text.'%',
-                                                    'home_place'=>$this->criterion->homeplace));
+        $cond = $this->buildWhereClause();
+        $query = 'SELECT count(*) FROM plg_obituary WHERE '.$cond['where'];
+        return $this->db->fetchColumn($query, $cond['params']);
     }
-    
+
+    protected function buildWhereClause() {
+        $where = 'domain_id=:domain_id AND (first_name LIKE :name OR middle_name LIKE :name OR last_name LIKE :name)
+                    AND death_date>:death_date_from AND death_date<:death_date_to';
+        $params = array('domain_id'=>$this->criterion->domain_id,
+                        'name'=>'%'.$this->criterion->text.'%',
+                        'death_date_from'=>$this->criterion->datefrom->format('Y-m-d'),
+                        'death_date_to'=>$this->criterion->dateto->format('Y-m-d')
+                        );
+        if($this->criterion->homeplace) {
+            $where.=" AND home_place=:home_place";
+            $params['home_place'] = $this->criterion->homeplace;
+        }
+        return array('where'=>$where, 'params'=>$params);
+    }
 }

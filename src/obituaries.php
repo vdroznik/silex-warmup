@@ -49,10 +49,11 @@ $app['twig']->addFilter('page', new Twig_Filter_Function('page'));
 
 $app->before(function() use ($app, $domain_id, $domain_name) {
     $app['request_context']->setParameter('domain_id', $domain_id);
-    $app['request_context']->setParameter('domain_name', $domain_name);
+//    $app['request_context']->setParameter('domain_name', $domain_name);
 } );
 
 $app->match('/obituaries-test', function () use ($app) {
+//    $app['db']->getConfiguration()->setSQLLogger(new Doctrine\DBAL\Logging\EchoSQLLogger);
     $obituarySearchCriterion = $app['session']->get('obituarySearchCriterion');
     if(!$obituarySearchCriterion) {
         $obituarySearchCriterion = new ObituarySearchCriterion($app['request_context']->getParameter('domain_id'));

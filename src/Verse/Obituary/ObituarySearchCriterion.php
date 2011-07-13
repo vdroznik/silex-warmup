@@ -13,6 +13,8 @@ class ObituarySearchCriterion {
 
     public function __construct($domain_id) {
         $this->domain_id = $domain_id;
+        $this->datefrom = new \DateTime('2000-01-01');
+        $this->dateto = new \DateTime();
     }
 
     public static function loadValidatorMetadata(ClassMetadata $metadata) {
@@ -21,6 +23,6 @@ class ObituarySearchCriterion {
     }
 
     public function notEmpty() {
-        return $this->text || $this->datefrom || $this->dateto || $this->homeplace;
+        return strlen($this->text);
     }
 }
