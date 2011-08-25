@@ -1,5 +1,5 @@
 <h1>Obituaries search</h1>
-<form action="/obituaries-test" method="post">
+<form action="{{ app.request.pathinfo }}" method="post">
     {{ form_widget(form.text) }}
     {{ form_widget(form.datefrom) }}
     {{ form_widget(form.dateto) }}
@@ -17,9 +17,15 @@
 </tr>
 {% for item in paginator.items %}
 <tr>
-<td>{{ item.image }}</td>
+<td>
+{% if item.image %}
+<img src="/{{ item.image }}" alt="{{ item.last_name|raw }}, {{ item.first_name|raw }} {{ item.middle_name|raw }}">
+{% else %}
+no image
+{% endif %}
+</td>
 <td>{{ item.death_date }}</td>
-<td><div>{{ item.last_name }}, {{ item.first_name }} {{ item.middle_name }}</div></td>
+<td><div>{{ item.last_name|raw }}, {{ item.first_name|raw }} {{ item.middle_name|raw }}</div></td>
 <td>{{ item.home_place }}</td>
 </tr>
 {% endfor %}

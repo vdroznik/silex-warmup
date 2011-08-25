@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__.'/../silex.phar';
+require_once __DIR__.'/../config/config.php';
 
 use Verse\Obituary\ObituarySearchCriterion;
 use Verse\Obituary\ObituarySearchForm;
@@ -17,10 +18,10 @@ $app->register(new Silex\Extension\SymfonyBridgesExtension(), array(
 
 $app->register(new Silex\Extension\DoctrineExtension(), array(
     'db.options' => array(
-        'dbname' => 'verse',
-        'host' => 'localhost',
-        'user' => 'root',
-        'password' => '`'
+        'dbname' => Config\DB\NAME,
+        'host' => Config\DB\HOST,
+        'user' => Config\DB\USER,
+        'password' => Config\DB\PASS
     ),
     'db.dbal.class_path'    => __DIR__.'/../vendor/doctrine-dbal/lib',
     'db.common.class_path'  => __DIR__.'/../vendor/doctrine-common/lib',
@@ -52,7 +53,7 @@ $app->before(function() use ($app, $domain_id, $domain_name) {
 //    $app['request_context']->setParameter('domain_name', $domain_name);
 } );
 
-$app->match('/obituaries-test', function () use ($app) {
+$app->match('/online-obituary', function () use ($app) {
 //    $app['db']->getConfiguration()->setSQLLogger(new Doctrine\DBAL\Logging\EchoSQLLogger);
     $obituarySearchCriterion = $app['session']->get('obituarySearchCriterion');
     if(!$obituarySearchCriterion) {
