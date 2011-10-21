@@ -1,36 +1,100 @@
+<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/themes/blitzer/jquery-ui.css" type="text/css" media="all"/>
+<link type="text/css" rel="stylesheet" href="http://fonts.googleapis.com/css?family=Tangerine:regular,bold">
 <h1>Obituaries search</h1>
-<form action="{{ app.request.pathinfo }}" method="post">
-    {{ form_widget(form.text) }}
-    {{ form_widget(form.datefrom) }}
-    {{ form_widget(form.dateto) }}
-    {{ form_widget(form.homeplace, {'empty_value': '-- Choose home city --'}) }}
-    <input type="submit" value="Search obituaries"/>
-</form>
-{% if paginator %}
-<div class="total">Found <strong>{{ paginator.results }}</strong> record(s)</div>
-<table>
-<tr>
-<th></th>
-<th>{{ "Date of Death"|order("death_date")|raw }}</th>
-<th>{{ "Name"|order("last_name")|raw }}</th>
-<th>{{ "Home Place"|order("home_place")|raw }}</th>
-</tr>
-{% for item in paginator.items %}
-<tr>
-<td>
-{% if item.image %}
-<img src="/{{ item.image }}" alt="{{ item.last_name|raw }}, {{ item.first_name|raw }} {{ item.middle_name|raw }}">
-{% else %}
-no image
+<div class="obit-search-form">
+    <form action="{{ app.request.pathinfo }}" method="post">
+    <div class="obit-search-form-item obit-search-name">
+        {{ form_widget(form.text) }}
+    </div>
+    <div class="obit-search-form-item obit-search-datefrom">
+        {{ form_widget(form.datefrom) }} -
+    </div>
+    <div class="obit-search-form-item obit-search-dateto">
+        {{ form_widget(form.dateto) }}
+    </div>
+    <div class="obit-search-form-item obit-search-homeplace">
+        {{ form_widget(form.homeplace, {'empty_value': '-- All cities --'}) }}
+    </div>
+{% if form.domain_id %}
+    <div class="obit-search-form-item obit-search-domain">
+        {{ form_widget(form.domain_id, {'empty_value': '-- All funeral homes --'}) }}
+    </div>
 {% endif %}
-</td>
-<td>{{ item.death_date }}</td>
-<td><div>{{ item.last_name|raw }}, {{ item.first_name|raw }} {{ item.middle_name|raw }}</div></td>
-<td>{{ item.home_place }}</td>
-</tr>
+    <div class="obit-search-form-item obit-search-sumbit">
+        <input type="image" src="/img/search.png" name="search" value="Search obituaries"/>
+        <input type="image" src="/img/reset.png" name="reset" value="Reset"/>
+    </div>
+    {{ form_rest(form) }}
+    </form>
+</div>
+{% if paginator %}
+<div class="obit-search-total">Found <strong>{{ paginator.results }}</strong> record(s)</div>
+<div class="obit-search-results">
+<div class="obit-search-header">
+<div class="obit-search-header-item obit-search-header-name">
+{{ "Name"|order("last_name")|raw }}
+</div>
+<div class="obit-search-header-item obit-search-header-date">
+{{ "Date"|order("death_date")|raw }}
+</div>
+<div class="obit-search-header-item obit-search-header-homeplace">
+{{ "Home Place"|order("home_place")|raw }}
+</div>
+</div>
+{% for item in paginator.items %}
+<a href="{{ app.request.pathinfo }}/{{ item.obituary_id }}">
+<div class="obit-search-row">
+<div class="obit-search-row-item obit-search-row-image">
+{% if item.image %}<img src="{{ item.image|thumbnail }}">{% else %}<img src="img/nt-nophoto.jpg">{% endif %}
+</div>
+<div class="obit-search-row-top">
+    <div class="obit-search-row-item obit-search-row-name">
+    {{ item.last_name }}, {{ item.first_name }} {{ item.middle_name }}
+    </div>
+    <div class="obit-search-row-item obit-search-row-deathdate">
+    {{ item.death_date|date("m/d/Y") }}
+    </div>
+    <div class="obit-search-row-item obit-search-row-homeplace">
+    {{ item.home_place }}
+    </div>
+{% if form.domain_id %}
+    <div class="obit-search-row-item obit-search-row-domain">
+    {{ item.title }}
+    </div>
+{% endif %}
+</div>
+<div class="obit-search-row-text">
+{{ item.obit_text|striptags|truncate(200) }}
+</div>
+</div>
+</a>
+{% else %}
+<div class="obit-search-no-results">
+No obituaries found. Please refine search condition.
+</div>
 {% endfor %}
-</table>
-<div class="paginator">
+</div>
+<div class="obit-search-paginator">
 {{ paginator|paginate|raw }}
 </div>
 {% endif %}
+<script>
+jQuery(function() {
+    var dates = $("#obit_search_datefrom, #obit_search_dateto").datepicker( {
+        defaultDate: "+1w",
+        changeYear: true,
+        numberOfMonths: 3,
+        onSelect: function( selectedDate ) {
+            var option = this.id == "obit_search_datefrom" ? "minDate" : "maxDate",
+                instance = $( this ).data( "datepicker" ),
+                date = $.datepicker.parseDate(
+                    instance.settings.dateFormat ||
+                    $.datepicker._defaults.dateFormat,
+                    selectedDate, instance.settings );
+            dates.not( this ).datepicker( "option", option, date );
+        }
+    } );
+});
+</script>

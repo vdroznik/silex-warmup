@@ -1,0 +1,7 @@
+<?php
+namespace Config\DB;
+
+const NAME = 'verse';
+const HOST = 'localhost';
+const USER = '';
+const PASS = '';
